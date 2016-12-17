@@ -2,12 +2,17 @@ package com.github.satoshun.example.io.reactivex;
 
 
 import com.github.satoshun.example.io.reactivex.internal.operators.observable.ObservableJust;
+import com.github.satoshun.example.io.reactivex.internal.operators.observable.ObservableSubscribeOn;
 import com.github.satoshun.example.io.reactivex.observers.TestObserver;
 
-public abstract class Observable<T> {
+public abstract class Observable<T> implements ObservableSource<T> {
 
   public static <T> Observable<T> just(T item) {
     return new ObservableJust<>(item);
+  }
+
+  public Observable<T> subscribeOn(Scheduler scheduler) {
+    return new ObservableSubscribeOn<>(this, scheduler);
   }
 
   public TestObserver<T> test() {
