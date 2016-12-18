@@ -1,6 +1,10 @@
 package com.github.satoshun.example.io.reactivex;
 
 
+import com.github.satoshun.example.io.reactivex.disposables.Disposable;
+import com.github.satoshun.example.io.reactivex.functions.Action;
+import com.github.satoshun.example.io.reactivex.functions.Consumer;
+import com.github.satoshun.example.io.reactivex.internal.LambdaObserver;
 import com.github.satoshun.example.io.reactivex.internal.operators.observable.ObservableJust;
 import com.github.satoshun.example.io.reactivex.internal.operators.observable.ObservableObserveOn;
 import com.github.satoshun.example.io.reactivex.internal.operators.observable.ObservableSubscribeOn;
@@ -26,17 +30,17 @@ public abstract class Observable<T> implements ObservableSource<T> {
     return observer;
   }
 
-  public void subscribe() {
-    subscribe(new Observer<T>() {
-      @Override public void onNext(T t) {
-      }
+  public Disposable subscribe() {
+    return subscribe(t -> {}, e -> {}, () -> {}, d -> {});
+  }
 
-      @Override public void onError(Throwable t) {
-      }
-
-      @Override public void onComplete() {
-      }
-    });
+  public Disposable subscribe(Consumer<? super T> onNext,
+                              Consumer<? super Throwable> onError,
+                              Action onComplete,
+                              Consumer<? super Disposable> onSubscribe) {
+    LambdaObserver<? super T> observer = new LambdaObserver<>(onNext, onError, onComplete, onSubscribe);
+    subscribe(observer);
+    return observer;
   }
 
   public void subscribe(Observer<? super T> observer) {

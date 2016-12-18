@@ -4,6 +4,7 @@ import com.github.satoshun.example.io.reactivex.Observable;
 import com.github.satoshun.example.io.reactivex.ObservableSource;
 import com.github.satoshun.example.io.reactivex.Observer;
 import com.github.satoshun.example.io.reactivex.Scheduler;
+import com.github.satoshun.example.io.reactivex.disposables.Disposable;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,10 +34,16 @@ public class ObservableObserveOn<T> extends Observable<T> {
 
     private volatile boolean done;
     private Throwable error;
+    private Disposable disposable;
 
     private ObserveOnObserver(Observer<? super T> actual, Scheduler.Worker worker) {
       this.actual = actual;
       this.worker = worker;
+    }
+
+    @Override public void onSubscribe(Disposable disposable) {
+      this.disposable = disposable;
+      actual.onSubscribe(disposable);
     }
 
     @Override public void onNext(T t) {
