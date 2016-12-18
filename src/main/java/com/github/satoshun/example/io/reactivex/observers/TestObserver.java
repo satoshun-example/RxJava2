@@ -5,6 +5,7 @@ import com.github.satoshun.example.io.reactivex.Observer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class TestObserver<T> implements Observer<T> {
 
@@ -19,12 +20,24 @@ public class TestObserver<T> implements Observer<T> {
     this.done = new CountDownLatch(1);
   }
 
+  public TestObserver<T> await(long delay, TimeUnit unit) throws InterruptedException {
+    if (done()) {
+      return this;
+    }
+    done.await(delay, unit);
+    return this;
+  }
+
   public TestObserver<T> await() throws InterruptedException {
-    if (done.getCount() == 0) {
+    if (done()) {
       return this;
     }
     done.await();
     return this;
+  }
+
+  private boolean done() {
+    return done.getCount() == 0;
   }
 
   public TestObserver<T> assertValues(T... t) {
