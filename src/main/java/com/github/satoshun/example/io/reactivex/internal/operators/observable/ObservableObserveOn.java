@@ -69,15 +69,20 @@ public class ObservableObserveOn<T> extends Observable<T> {
       Observer<? super T> a = this.actual;
 
       for (; ; ) {
-        T v = q.poll();
-        boolean empty = v == null;
-        if (checkTerminated(done, empty, a)) {
+        if (checkTerminated(done, q.isEmpty(), a)) {
           break;
         }
-        if (empty) {
-          break;
+        for (;;) {
+          T v = q.poll();
+          boolean empty = v == null;
+          if (checkTerminated(done, empty, a)) {
+            break;
+          }
+          if (empty) {
+            break;
+          }
+          a.onNext(v);
         }
-        a.onNext(v);
       }
     }
 
