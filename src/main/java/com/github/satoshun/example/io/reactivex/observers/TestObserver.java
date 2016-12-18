@@ -1,18 +1,21 @@
 package com.github.satoshun.example.io.reactivex.observers;
 
 import com.github.satoshun.example.io.reactivex.Observer;
+import com.github.satoshun.example.io.reactivex.disposables.Disposable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class TestObserver<T> implements Observer<T> {
+public class TestObserver<T> implements Observer<T>, Disposable {
 
   private final List<T> values;
   private final List<Throwable> errors;
   private final CountDownLatch done;
   private long completions;
+
+  private Disposable disposable;
 
   public TestObserver() {
     this.values = new ArrayList<>();
@@ -69,6 +72,10 @@ public class TestObserver<T> implements Observer<T> {
     return new AssertionError(message);
   }
 
+  @Override public void onSubscribe(Disposable disposable) {
+    this.disposable = disposable;
+  }
+
   @Override public void onNext(T t) {
     values.add(t);
   }
@@ -87,5 +94,15 @@ public class TestObserver<T> implements Observer<T> {
     } finally {
       done.countDown();
     }
+  }
+
+  @Override public void dispose() {
+    if (disposable != null) {
+      disposable.dispose();
+    }
+  }
+
+  @Override public boolean isDispose() {
+    return disposable != null && disposable.isDispose();
   }
 }
