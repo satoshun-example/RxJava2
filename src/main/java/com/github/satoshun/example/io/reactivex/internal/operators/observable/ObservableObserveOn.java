@@ -65,6 +65,8 @@ public class ObservableObserveOn<T> extends Observable<T> {
     }
 
     private void drainNormal() {
+      int missed = 0;
+
       final LinkedBlockingQueue<T> q = queue;
       Observer<? super T> a = this.actual;
 
@@ -72,16 +74,21 @@ public class ObservableObserveOn<T> extends Observable<T> {
         if (checkTerminated(done, q.isEmpty(), a)) {
           break;
         }
-        for (;;) {
+        for (; ; ) {
           T v = q.poll();
           boolean empty = v == null;
           if (checkTerminated(done, empty, a)) {
-            break;
+            return;
           }
           if (empty) {
             break;
           }
           a.onNext(v);
+        }
+
+        missed = addAndGet(-missed);
+        if (missed == 0) {
+          break;
         }
       }
     }
