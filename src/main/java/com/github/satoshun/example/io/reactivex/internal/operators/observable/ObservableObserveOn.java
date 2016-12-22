@@ -24,7 +24,7 @@ public class ObservableObserveOn<T> extends Observable<T> {
   }
 
 
-  private static class ObserveOnObserver<T> extends AtomicInteger implements Observer<T>, Runnable {
+  private static class ObserveOnObserver<T> extends AtomicInteger implements Observer<T>, Runnable, Disposable {
 
     private final Observer<? super T> actual;
     private final Scheduler.Worker worker;
@@ -43,7 +43,7 @@ public class ObservableObserveOn<T> extends Observable<T> {
 
     @Override public void onSubscribe(Disposable disposable) {
       this.disposable = disposable;
-      actual.onSubscribe(disposable);
+      actual.onSubscribe(this);
     }
 
     @Override public void onNext(T t) {
@@ -72,14 +72,14 @@ public class ObservableObserveOn<T> extends Observable<T> {
     }
 
     private void drainNormal() {
-      int missed = 0;
+      int missed = 1;
 
       final LinkedBlockingQueue<T> q = queue;
-      Observer<? super T> a = this.actual;
+      final Observer<? super T> a = this.actual;
 
       for (; ; ) {
         if (checkTerminated(done, q.isEmpty(), a)) {
-          break;
+          return;
         }
         for (; ; ) {
           T v = q.poll();
@@ -117,6 +117,15 @@ public class ObservableObserveOn<T> extends Observable<T> {
         }
       }
       return false;
+    }
+
+    @Override public void dispose() {
+      disposable.dispose();
+      worker.dispose();
+    }
+
+    @Override public boolean isDispose() {
+      return worker.isDispose();
     }
   }
 }
