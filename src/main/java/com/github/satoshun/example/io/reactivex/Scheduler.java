@@ -1,27 +1,29 @@
 package com.github.satoshun.example.io.reactivex;
 
+import com.github.satoshun.example.io.reactivex.disposables.Disposable;
+
 import java.util.concurrent.TimeUnit;
 
 public abstract class Scheduler {
 
-  public void scheduleDirect(Runnable run) {
-    scheduleDirect(run, 0, TimeUnit.MICROSECONDS);
+  public Disposable scheduleDirect(Runnable run) {
+    return scheduleDirect(run, 0, TimeUnit.MICROSECONDS);
   }
 
-  private void scheduleDirect(Runnable run, long delay, TimeUnit unit) {
+  private Disposable scheduleDirect(Runnable run, long delay, TimeUnit unit) {
     Worker w = createWorker();
-    w.schedule(run, delay, unit);
+    return w.schedule(run, delay, unit);
   }
 
   public abstract Worker createWorker();
 
 
-  public static abstract class Worker {
+  public static abstract class Worker implements Disposable {
 
-    public void schedule(Runnable run) {
-      schedule(run, 0, TimeUnit.SECONDS);
+    public Disposable schedule(Runnable run) {
+      return schedule(run, 0, TimeUnit.SECONDS);
     }
 
-    public abstract void schedule(Runnable run, long delay, TimeUnit unit);
+    public abstract Disposable schedule(Runnable run, long delay, TimeUnit unit);
   }
 }
